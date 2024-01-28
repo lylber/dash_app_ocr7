@@ -12,6 +12,7 @@ import API
 colors = {
     'background': '#B0C4DE',
     'text': '#00152F'}
+server = app.server
 
 # Barre de navigation
 navbar = dbc.Navbar(
