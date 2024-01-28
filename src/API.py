@@ -7,14 +7,14 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import dash_bootstrap_components as dbc
 import sys
-sys.path.append(r'dashbord_dash\ressources')
+sys.path.append(r'ressources')
 from dico_features import *
 from app import app
 
 # Initialisation de l'application Dash
 #app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-model = joblib.load(r'dashbord_dash\model\best_model.pkl')
+model = joblib.load(r'model\best_model.pkl')
 
 scaler= model.named_steps['scaler']
 data = pd.read_csv(r'datasets\train.csv').drop(['TARGET'],axis=1)
