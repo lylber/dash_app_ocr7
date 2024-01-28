@@ -14,10 +14,10 @@ from app_base import app
 # Initialisation de l'application Dash
 #app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-model = joblib.load(r'model\best_model.pkl')
+model = joblib.load(r'model/best_model.pkl')
 
 scaler= model.named_steps['scaler']
-data = pd.read_csv(r'datasets\train.csv').drop(['TARGET'],axis=1)
+data = pd.read_csv(r'datasets/train.csv').drop(['TARGET'],axis=1)
 
 numerical_columns = data.columns[~data.columns.isin(colonnes_catégoriques)]
 

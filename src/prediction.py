@@ -11,7 +11,7 @@ import plotly.graph_objs as go
 import dash_table
 import warnings
 import sys
-sys.path.append(r'ressources\\')
+sys.path.append(r'ressources/')
 from shap_plot import *
 from app_base import app
 
@@ -20,10 +20,10 @@ warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 
 # Move loading outside the main script
 def load_data():
-    model = joblib.load(r'model\best_model.pkl')
-    data = pd.read_csv(r'datasets\test.csv')
-    data_brut=pd.read_csv(r'datasets\brut_test.csv')
-    train=pd.read_csv(r'datasets\train.csv')
+    model = joblib.load(r'model/best_model.pkl')
+    data = pd.read_csv(r'datasets/test.csv')
+    data_brut=pd.read_csv(r'datasets/brut_test.csv')
+    train=pd.read_csv(r'datasets/train.csv')
 
     scaler= model.named_steps['scaler']
 
