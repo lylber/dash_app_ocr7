@@ -13,7 +13,7 @@ import warnings
 import sys
 sys.path.append(r'ressources\\')
 from shap_plot import *
-from app import app
+from app_base import app
 
 # Suppress the InconsistentVersionWarning
 warnings.filterwarnings("ignore", category=InconsistentVersionWarning)

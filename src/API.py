@@ -9,7 +9,7 @@ import dash_bootstrap_components as dbc
 import sys
 sys.path.append(r'ressources')
 from dico_features import *
-from app import app
+from app_base import app
 
 # Initialisation de l'application Dash
 #app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])

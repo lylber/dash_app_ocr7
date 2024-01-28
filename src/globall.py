@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output
 import pandas as pd
 import dash_bootstrap_components as dbc
 import plotly.express as px
-from app import app
+from app_base import app
 
 # Chargement des données
 data = pd.read_csv(r'datasets\brut_test.csv')

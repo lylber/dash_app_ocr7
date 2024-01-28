@@ -13,7 +13,7 @@ from dico_features import data_dictionary
 with open(os.path.join( "ressources", "logo_projet_fintech.png"), "rb") as image_file:
     encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
 
-from app import app
+from app_base import app
 
 # Initialiser l'application Dash
 # app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
