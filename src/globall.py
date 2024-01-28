@@ -7,6 +7,7 @@ import plotly.express as px
 from app_base import app
 
 # Chargement des données
+
 data = pd.read_csv(r'datasets/brut_test.csv')
 numeric_columns = data.select_dtypes(include=['number']).columns
 
