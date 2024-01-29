@@ -9,3 +9,4 @@ scikit_learn==1.4.0
 shap==0.42.1
 gunicorn
 dash-tools
+imblearn
