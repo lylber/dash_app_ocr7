@@ -8,7 +8,7 @@ from sklearn.preprocessing import MinMaxScaler
 import dash_bootstrap_components as dbc
 import sys
 sys.path.append(r'ressources')
-from dico_features import *
+from ressources.dico_features import *
 from app_base import app
 
 # Initialisation de l'application Dash
@@ -38,12 +38,14 @@ else:
 # Layout pour l'application Dash
 layout = html.Div(children=[ dbc.Container([
         dbc.Row([
-            dbc.Col(html.H1("Prédition modèle", className="text-center",style={'fontFamily': 'Roboto'}), className="mb-0 mt-3")
+            dbc.Col(html.H1("Prédiction modèle", className="text-center",style={'fontFamily': 'Roboto'}), className="mb-0 mt-3")
         ]),
         html.Br(),
     *[dcc.Input(id=f'feature-{col}', type='number', placeholder=col) if col not in colonnes_catégoriques
       else dcc.Dropdown(id=f'feature-{col}', placeholder=col, options=[{'label': str(key), 'value': val} for key, val in
-                                                       globals()[f'd_{col}'].items()], value=list(globals()[f'd_{col}'].values())[0] )#value=list(globals()[f'd_{col}'].keys())[0]
+                                                       globals()[f'd_{col}'].items()], 
+                                                       value=list(globals()[f'd_{col}'].values())[0] )
+                                                                       #value=list(globals()[f'd_{col}'].keys())[0]
       for i, col in enumerate(data.columns)],
     html.Br(),
     html.Button('Prédiction', id='predict-button'),

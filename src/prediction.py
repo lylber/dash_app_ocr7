@@ -12,14 +12,16 @@ import dash_table
 import warnings
 import sys
 sys.path.append(r'ressources/')
-from shap_plot import *
+import base64
+from ressources.shap_plot import *
 from app_base import app
 
 # Suppress the InconsistentVersionWarning
 warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 
-# Move loading outside the main script
+# telecharger et traiter les datasets train/test
 def load_data():
+    
     model = joblib.load(r'model/best_model.pkl')
     data = pd.read_csv(r'datasets/test.csv')
     data_brut=pd.read_csv(r'datasets/brut_test.csv')
@@ -66,6 +68,8 @@ logistic_regression_model = model.named_steps['m']
 
 param = {'color': '#8badda'}
 
+image_filename = r'ressources/shap.plots.beeswarm(explainer(train)).png'
+encoded_image = base64.b64encode(open(image_filename, 'rb').read())
 
 
 # Create a sample layout for the DataTable
@@ -103,10 +107,21 @@ layout = html.Div(children=[
         html.Br(),
 
         html.Div(id='output-prediction'),
-
-        dbc.Progress(id='probability-progress-bar', value=50, color="success", style={"height": "20px"}, className="mb-3"),
         html.Br(),
-        dcc.Graph(id='prediction-chart1'),
+        html.Div(
+        dcc.Graph(id='probability-progress-bar'),
+        style={'display': 'flex', 'justify-content': 'center'}
+        ),
+        html.Br(),
+        dbc.Row([
+ 
+        
+        dbc.Col(html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()), style={'width': '100%', 'height': '400px',}), width=6, className='my-5', style={'marginTop': '50px','marginLeft': 'auto'}),
+        dbc.Col(dcc.Graph(id='prediction-chart1'), width=6, className='my-5', style={'marginTop': '0px','width': '48%','marginRight': '25px'}),
+        ], style={'width': '100%', 'display': 'flex', 'align-items': 'center', 'justify-content': 'center'}),
+
+
+     #   dcc.Graph(id='prediction-chart1'),
         html.Br(),
         table_layout
     ])
@@ -119,14 +134,13 @@ layout = html.Div(children=[
 @app.callback(
     [Output('output-prediction', 'children'),
      Output('prediction-chart1', 'figure'),
-     Output('probability-progress-bar', 'value'),
-     Output('probability-progress-bar', 'style'),
+     Output('probability-progress-bar', 'figure'),
      Output('data-table', 'data')],
     [Input('input-customer-id', 'value')],
     allow_duplicate=True
 )
 
-def update_prediction(customer_id):
+def update_prediction(customer_id,threshold=0.6):
     
     try:
         customer_id = int(customer_id)
@@ -135,44 +149,37 @@ def update_prediction(customer_id):
 
         input_features_scaled = pd.DataFrame(scaler.transform(input_features), columns=input_features.columns, index=input_features.index)
 
-        prediction = model.predict(input_features_scaled)[0]
+    #    prediction = model.predict(input_features_scaled)[0] #prediction sans seuil
         probabilities = model.predict_proba(input_features_scaled)[0]
-        positive_probability = probabilities[1]
+        positive_probability = round(probabilities[1],2)
+        y_pred_thresholded = (positive_probability >= threshold).astype(int)        
+        print(f"DEBUG: Prediction: {y_pred_thresholded}, Positive Probability: {positive_probability}")
 
-        print(f"DEBUG: Prediction: {prediction}, Positive Probability: {positive_probability}")
+        plot=shap_plot(input_features_scaled,positive_probability,logistic_regression_model, train,selected_columns)
         
-        fig=shap_plot(input_features_scaled,positive_probability,logistic_regression_model, train,selected_columns)[1]
-
-        # Add a horizontal bar for each variable with a gradient color
-
-        
-        if prediction == 1:
+        fig=plot[1]
+        # Add a horizontal bar for each variable with a gradient color     
+        if y_pred_thresholded == 1:
             prediction='non solvable'
         else:
             prediction='solvable'
-            positive_probability=1-positive_probability
-
+            if positive_probability < 0.5:
+                positive_probability=round(probabilities[0],2)
+            else:
+                positive_probability=round(probabilities[0],2)
+                positive_probability=f'{positive_probability} seuil de solvabilité dépassé'
         # Update the progress bar value based on the positive probability
-        progress_value = int(positive_probability * 100)
-
-        # Update the progress bar style with the dynamic color gradient
-        color = get_heat_color(positive_probability)
-        progress_style = {"height": "20px", "backgroundColor": color}
-
+        progress_value = plot[0]
         # Fetch AGE and NAME_FAMILY_STATUS for the selected SK_ID_CURR
         selected_data = data_brut.loc[data_brut['SK_ID_CURR'] == customer_id,  ['SK_ID_CURR', 'AGE','CODE_GENDER', 'NAME_FAMILY_STATUS', 'CNT_CHILDREN',]]
         table_data = selected_data.to_dict(orient='records')
-
-
-
         print(f"DEBUG: Table Data: {table_data}")
 
         return (
             f"La prédiction du modèle pour le client {customer_id} est : {prediction}, "
-            f"Probabilité  : {positive_probability:.2f}",
+            f" probabilité  : {positive_probability}",
             fig,
             progress_value,
-            progress_style,
             table_data
         )
     except Exception as e:

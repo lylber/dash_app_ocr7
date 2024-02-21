@@ -4,6 +4,7 @@ from dash.dependencies import Input, Output
 import pandas as pd
 import dash_bootstrap_components as dbc
 import plotly.express as px
+import plotly.graph_objects as go
 from app_base import app
 
 # Chargement des données
@@ -46,7 +47,7 @@ layout = html.Div(children=[
             dbc.Col(html.Label("Entrez l'ID du client :", style={'fontWeight': 'bold'}), width=2),
             dbc.Col(dcc.Dropdown(
                 id='input-customer-id',
-                options=[{'label': str(i), 'value': i} for i in data['SK_ID_CURR']],
+                options=[{'label': int(i), 'value': int(i)} for i in data['SK_ID_CURR']],
                 value=None,
                 style={
                     'backgroundColor': param['color'],
@@ -100,21 +101,12 @@ def plot_column_data(param_ids, input_customer_id=None):
                     y1=1,
                     line=dict(color='red', width=2, dash='dash')
                 )
-                
+
                 # Find the bin index corresponding to valeur_affichee
                 bin_index = next(
                     (i for i, bin_edge in enumerate(fig.data[0].x[:-1]) if bin_edge <= valeur_affichee < fig.data[0].x[i + 1]),
                     len(fig.data[0].x) - 1
                 )
-
-                # Update the color of the selected bin to red
-                fig.update_traces(marker_color=['red' if i == bin_index else 'blue' for i in range(len(fig.data[0].x) - 1)])
-
-                # Add black marker lines for visibility
-                fig.update_traces(marker_line_color='black', marker_line_width=1, selector=dict(type='bar'))
-
-                # Update layout to add black borders to bars and hide legend
-                fig.update_layout(bargap=0.1, bargroupgap=0.1, showlegend=False)
 
                 # Add annotation for the exact value of valeur_affichee at the center of the bin
                 bin_center = (fig.data[0].x[bin_index] + fig.data[0].x[bin_index + 1]) / 2
@@ -131,38 +123,6 @@ def plot_column_data(param_ids, input_customer_id=None):
                     font=dict(color='black')
                 )
 
-            figures.append(fig)
-        elif data[param_id].dtype == 'int64':
-            value_counts = data[param_id].value_counts()
-            fig = px.bar(x=value_counts.index, y=value_counts.values)
-            fig.update_layout(
-                        margin=dict(l=20, r=20, t=20, b=20))
-            if input_customer_id is not None:
-                valeur_affichee = data[data['SK_ID_CURR'] == input_customer_id][param_id].values[0]
-                fig.add_shape(
-                    type='line',
-                    x0=valeur_affichee,
-                    x1=valeur_affichee,
-                    y0=0,
-                    y1=value_counts.max(),
-                    line=dict(color='red', width=2, dash='dash')
-                )
-            figures.append(fig)
-        elif data[param_id].dtype == 'object':
-            value_counts = data[param_id].value_counts()
-            fig = px.bar(x=value_counts.index, y=value_counts.values)
-            fig.update_layout(
-                        margin=dict(l=20, r=20, t=20, b=20))
-            if input_customer_id is not None:
-                valeur_affichee = data[data['SK_ID_CURR'] == input_customer_id][param_id].values[0]
-                fig.add_shape(
-                    type='line',
-                    x0=str(value_counts.index[0]),
-                    x1=str(value_counts.index[0]),
-                    y0=0,
-                    y1=value_counts.max(),
-                    line=dict(color='red', width=2, dash='dash')
-                )
             figures.append(fig)
         else:
             print(f"Type de données non pris en charge pour {param_id}")

@@ -7,16 +7,13 @@ import base64
 import sys
 sys.path.append(r'ressources')
 from dico_features import data_dictionary
+from app_base import app
 
 # Récupérer le chemin du script
 # Charger l'image et la convertir en base64
+
 with open(os.path.join( "ressources", "logo_projet_fintech.png"), "rb") as image_file:
     encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
-
-from app_base import app
-
-# Initialiser l'application Dash
-# app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 # Définir la mise en page
 layout = html.Div(children=[
