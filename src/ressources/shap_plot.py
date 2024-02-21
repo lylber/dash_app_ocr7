@@ -9,22 +9,19 @@ import warnings
 import shap
 
 
-# add blocks for risk groups
-bot_val = 0.5
-top_val = 1
-
-
 # Define the get_heat_color function to generate a gradient color
 def get_heat_color(value):
     # Ensure the value is within the valid range [0, 1]
     value = max(0, min(1, value))
     
     # Calculate color based on the importance value
-    red = int((1 - value) * 255)
-    green = int(value * 255)
-    return f'rgb({red}, {green}, 0)'
+    red = int((1 - value) * 200)
+    green = int(value * 200)
+    return f'rgb({green}, {red}, 0)'
 
 
+bot_val = 0.5
+top_val = 1
 
 def shap_plot(input_features_scaled, positive_probability,logistic_regression_model,train,selected_columns):
 
@@ -58,7 +55,7 @@ def shap_plot(input_features_scaled, positive_probability,logistic_regression_mo
         x1=0.275686 * 100,
         y1=top_val,
         line=dict(
-            color="white",
+            color=None,
         ),
         fillcolor="green"
     )
@@ -69,7 +66,7 @@ def shap_plot(input_features_scaled, positive_probability,logistic_regression_mo
         x1=0.795584 * 100,
         y1=top_val,
         line=dict(
-            color="white",
+            color=None,
         ),
         fillcolor="orange"
     )
@@ -80,7 +77,7 @@ def shap_plot(input_features_scaled, positive_probability,logistic_regression_mo
         x1=1 * 100,
         y1=top_val,
         line=dict(
-            color="white",
+            color=None,
         ),
         fillcolor="red"
     )
@@ -105,14 +102,26 @@ def shap_plot(input_features_scaled, positive_probability,logistic_regression_mo
         showarrow=False,
         font=dict(color="black", size=14)
     )
-    fig1.update_layout(margin=dict(l=0, r=50, t=10, b=10), xaxis={'range': [0, 100]})
+    #fig1.update_layout(margin=dict(l=0, r=50, t=10, b=10), xaxis={'range': [0, 100]})
+
+    fig1.update_layout(
+        autosize=False,
+        width=1000,
+        height=100,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=0, r=0, t=0, b=0),
+        xaxis={'range': [0, 100]},        
+
+    )
+
 
     # do shap value calculations for basic waterfall plot
-    explainer_patient = shap.Explainer(logistic_regression_model, train, feature_perturbation="interventional")
-    shap_values_patient = explainer_patient.shap_values(input_features_scaled[selected_columns])
-    updated_fnames = input_features_scaled.T.reset_index()
+    explainer = shap.Explainer(logistic_regression_model, train)
+    shap_values = np.around(explainer.shap_values(input_features_scaled[selected_columns]),2)
+    updated_fnames = input_features_scaled[selected_columns].T.reset_index()
     updated_fnames.columns = ['feature', 'value']
-    updated_fnames['shap_original'] = pd.Series(shap_values_patient[0])
+    updated_fnames['shap_original'] = pd.Series(shap_values[0])
     updated_fnames['shap_abs'] = updated_fnames['shap_original'].abs()
     updated_fnames = updated_fnames.sort_values(by=['shap_abs'], ascending=True)
 
@@ -135,7 +144,7 @@ def shap_plot(input_features_scaled, positive_probability,logistic_regression_mo
         name="",
         orientation="h",
         measure=['absolute'] + ['relative']*show_features,
-        base=explainer_patient.expected_value,
+        base=explainer.expected_value,
         textposition=plot_data['text_pos'],
         text=plot_data['shap_original'],
         textfont={"color": plot_data['text_col']},
@@ -175,8 +184,8 @@ def shap_plot(input_features_scaled, positive_probability,logistic_regression_mo
             dict(
                 type='line',
                 yref='paper', y0=0, y1=1.02,
-                xref='x', x0=plot_data['shap_original'].sum()+explainer_patient.expected_value,
-                x1=plot_data['shap_original'].sum()+explainer_patient.expected_value,
+                xref='x', x0=plot_data['shap_original'].sum()+explainer.expected_value,
+                x1=plot_data['shap_original'].sum()+explainer.expected_value,
                 layer="below",
                 line=dict(
                     color="white",
@@ -189,9 +198,9 @@ def shap_plot(input_features_scaled, positive_probability,logistic_regression_mo
     fig2.add_annotation(
         yref='paper',
         xref='x',
-        x=explainer_patient.expected_value,
+        x=explainer.expected_value,
         y=-0.12,
-        text="E[f(x)] = {:.2f}".format(explainer_patient.expected_value),
+        text="E[f(x)] = {:.2f}".format(explainer.expected_value),
         showarrow=False,
         font=dict(color="blue", size=14)
     )
@@ -199,9 +208,9 @@ def shap_plot(input_features_scaled, positive_probability,logistic_regression_mo
     fig2.add_annotation(
         yref='paper',
         xref='x',
-        x=plot_data['shap_original'].sum()+explainer_patient.expected_value,
+        x=plot_data['shap_original'].sum()+explainer.expected_value,
         y=1.075,
-        text="f(x) = {:.2f}".format(plot_data['shap_original'].sum()+explainer_patient.expected_value),
+        text="f(x) = {:.2f}".format(plot_data['shap_original'].sum()+explainer.expected_value),
         showarrow=False,
         font=dict(color="black", size=14)
     )
