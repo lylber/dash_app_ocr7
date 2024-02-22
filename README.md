@@ -7,7 +7,7 @@ Taches :
 
 - Rendre les explications simples :les clients sont de plus en plus demandeurs de transparence vis-à-vis des décisions d’octroi de crédit
 
--Développer un dashboard interactif avec la possibilité de tester la solvabilité d’un client 
+- Développer un dashboard interactif avec la possibilité de tester la solvabilité d’un client 
 
 # Données clients
 
